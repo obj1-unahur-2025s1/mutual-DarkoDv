@@ -11,13 +11,13 @@ class Viajes{
 }
 
 class ViajeDePlaya inherits Viajes{
-  var largo
+  var property largo
  override method diasViaje()= largo/500
   override method implicaEsfuerzo()= largo>1200
 }
 
 class ViajeCiudad inherits Viajes{
-  var atraccionesAVisitar
+  var property atraccionesAVisitar
   override method diasViaje()= atraccionesAVisitar/2
   override method implicaEsfuerzo()= atraccionesAVisitar.between(5, 8)
   override method sirveBronceo()= false
@@ -30,8 +30,8 @@ class ViajeCiudadTropical inherits ViajeCiudad{
 }
 
 class ViajeTrekking inherits Viajes{
-  var kilometros
-  var diasSol
+  var property kilometros
+  var property diasSol
   override method diasViaje() = kilometros/50
   override method implicaEsfuerzo()= 80
   override method sirveBronceo()= diasSol>200 or (diasSol.between(100, 200)&& kilometros>120)
@@ -39,11 +39,15 @@ class ViajeTrekking inherits Viajes{
 }
 
 class ClasesGimnasia inherits Viajes{
-   override method idiomas()= "español"
    override method diasViaje()= 1
    override method implicaEsfuerzo()= true
    override method sirveBronceo()= false
    override method actividadRecomendadaPara(unSocio)= unSocio.edad().between(20, 30)
+    method initialize(){
+      idiomas.clear()
+      idiomas.add("español")
+      if(idiomas!=["español"]) self.error("solo se permite idioma español")
+    }
 }
 
 class TallerLiterario inherits Viajes{
@@ -53,6 +57,8 @@ class TallerLiterario inherits Viajes{
   override method implicaEsfuerzo(){
     return librosDisponibles.any({l=>l.cantPaginas()>500}) or librosDisponibles.map({l=>l.nombreAutor()}).asSet().size() == 1 && librosDisponibles.size() > 1
   } 
+  override method sirveBronceo()= false
+  override method actividadRecomendadaPara(unSocio)= unSocio.idioma().size() >1
 }
 
 class Libro {
@@ -66,6 +72,12 @@ class Socio{
   var idiomas
   var property actividades
   var cantMaxActividades
+  method realizarActividad(unaActividad) {
+      if(actividades.size() == cantMaxActividades){
+        throw new Exception(message = "ya realizaste la cantidad maxima de actividades")
+      }
+      actividades.add(unaActividad)
+    }
   method adoraSol(){
     return actividades.all({a=>a.sirveBronceo()})
   }
@@ -73,7 +85,7 @@ class Socio{
     return actividades.map({a=>a.implicaEsfuerzo()})
   }
   method initialize(){
-    if(actividades.size()> cantMaxActividades){
+    if(actividades.size()== cantMaxActividades){
       self.error("erorrrr")
     }
   }
